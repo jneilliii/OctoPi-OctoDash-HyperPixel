@@ -43,3 +43,5 @@ EOF
 echo_green "Setting permissions..."
 chmod +x /home/pi/.xinitrc
 chmod ug+s /usr/lib/xorg/Xorg
+echo_green "Setting Console AutoLogin on boot..."
+raspi-config nonint do_boot_behaviour B2

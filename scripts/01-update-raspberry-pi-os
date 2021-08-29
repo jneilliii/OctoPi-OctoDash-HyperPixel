@@ -6,5 +6,5 @@ export LC_ALL=C
 source /common.sh
 install_cleanup_trap
 
-apt update
+apt update --allow-releaseinfo-change
 apt upgrade -y

@@ -19,28 +19,23 @@ jobs:
     - name: "⬇ Checkout"
       uses: actions/checkout@v2
 
-    - name: "🔎 Determine OctoPrint version"
-      run: |
-        if [[ "${{ github.event_name }}" = "repository_dispatch" ]]; then
-          OCTOPRINT_VERSION="${{ github.event.client_payload.version }}"
-        else
-          OCTOPRINT_VERSION="${{ github.event.inputs.octoprint_version }}"
-        fi
+    - id: octoprint_latestrelease
+      name: 🔎 Get OctoPrint Version
+      uses: loeken/github-action-get-latest-release@master
+      with:
+        repository: OctoPrint/OctoPrint
 
-        if [ -z "$OCTOPRINT_VERSION" ]; then
-          OCTOPRINT_VERSION=$(curl https://pypi.org/pypi/OctoPrint/json -s | jq -r '.info.version')
-        fi
-
-        # Make sure we have a published version
-        curl -fsSL --output /dev/null --head https://pypi.org/pypi/OctoPrint/$OCTOPRINT_VERSION/ || exit 1
-
-        echo "OCTOPRINT_VERSION=$OCTOPRINT_VERSION" >> $GITHUB_ENV
-
-    - name: "🔎 Determine OctoDash version"
+    - name: 🔎 Get OctoDash version
       id: octodash_version
-      uses: pozetroninc/github-action-get-latest-release@master
+      uses: loeken/github-action-get-latest-release@master
       with:
         repository: UnchartedBull/OctoDash
+
+    - id: octopi_latestrelease
+      name: 🔎 Get OctoPi Version
+      uses: loeken/github-action-get-latest-release@master
+      with:
+        repository: guysoft/OctoPi
 
     - name: "⬇ Download latest OctoPi"
       id: octopi_download
@@ -55,14 +50,11 @@ jobs:
         IMAGE=$(ls *.img | head -n 1)
         mv $IMAGE input.img
 
-        OCTOPI_VERSION=$(basename -s .img $IMAGE | awk -F"-" '{print $NF}')
-        echo "OCTOPI_VERSION=$OCTOPI_VERSION" >> $GITHUB_ENV
-
     - name: "🏗 Run CustoPiZer"
       run: |
         sudo modprobe loop
         docker run --rm --privileged \
-          -e OCTOPRINT_VERSION=${{ env.OCTOPRINT_VERSION }} \
+          -e OCTOPRINT_VERSION=${{ steps.octoprint_latestrelease.outputs.release }} \
           -v ${{ github.workspace }}/scripts/files/config.local:/CustoPiZer/config.local \
           -v ${{ github.workspace }}/build:/CustoPiZer/workspace \
           -v ${{ github.workspace }}/scripts:/CustoPiZer/workspace/scripts \
@@ -70,8 +62,8 @@ jobs:
 
     - name: "📦 Package the image"
       run: |
-        OCTOPI_VERSION="${{ env.OCTOPI_VERSION }}"
-        OCTOPRINT_VERSION="${{ env.OCTOPRINT_VERSION }}"
+        OCTOPI_VERSION="${{ steps.octopi_latestrelease.outputs.release }}"
+        OCTOPRINT_VERSION="${{ steps.octoprint_latestrelease.outputs.release }}"
         
         IMAGE="octopi-$OCTOPI_VERSION-octoprint-$OCTOPRINT_VERSION-octodash-${{ steps.octodash_version.outputs.release }}.img"
         echo "IMAGE=$IMAGE" >> $GITHUB_ENV
@@ -84,10 +76,10 @@ jobs:
     
     - name: "📝 Prepare release"
       run: |
-        RELEASE_NAME="OctoPi ${{ env.OCTOPI_VERSION }} with OctoPrint ${{ env.OCTOPRINT_VERSION }} and OctoDash ${{ steps.octodash_version.outputs.release }}"
+        RELEASE_NAME="OctoPi ${{ steps.octopi_latestrelease.outputs.release }} with OctoPrint ${{ steps.octoprint_latestrelease.outputs.release }} and OctoDash ${{ steps.octodash_version.outputs.release }}"
         echo "RELEASE_NAME=$RELEASE_NAME" >> $GITHUB_ENV
 
-        RELEASE_TAG="${{ env.OCTOPI_VERSION }}.op${{ env.OCTOPRINT_VERSION }}.od${{ steps.octodash_version.outputs.release }}"
+        RELEASE_TAG="${{ steps.octopi_latestrelease.outputs.release }}.op${{ steps.octoprint_latestrelease.outputs.release }}.od${{ steps.octodash_version.outputs.release }}"
         echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
 
         RELEASE_BODY=""
@@ -101,7 +93,7 @@ jobs:
         name: "${{ env.RELEASE_NAME }}"
         tag_name: "${{ env.RELEASE_TAG }}"
         body: "${{ env.RELEASE_BODY }}"
-        prerelease: ${{ contains(env.OCTOPRINT_VERSION, 'rc') }}
+        prerelease: ${{ contains(steps.octoprint_latestrelease.outputs.release, 'rc') }}
         fail_on_unmatched_files: true
         files: |
           build/${{ env.IMAGE }}.zip

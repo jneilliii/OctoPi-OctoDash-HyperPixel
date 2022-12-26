@@ -12,29 +12,29 @@ jobs:
     steps:
 
     - name: ⬇ Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - id: my_latestrelease
       name: 🔎 Get My Version
-      uses: pozetroninc/github-action-get-latest-release@master
+      uses: loeken/github-action-get-latest-release@master
       with:
         repository: ${{ github.repository }}
 
     - id: octoprint_latestrelease
       name: 🔎 Get OctoPrint Version
-      uses: pozetroninc/github-action-get-latest-release@master
+      uses: loeken/github-action-get-latest-release@master
       with:
         repository: OctoPrint/OctoPrint
 
     - id: octopi_latestrelease
       name: 🔎 Get OctoPi Version
-      uses: pozetroninc/github-action-get-latest-release@master
+      uses: loeken/github-action-get-latest-release@master
       with:
         repository: guysoft/OctoPi
 
     - id: octodash_latestrelease
       name: 🔎 Get OctoDash Version
-      uses: pozetroninc/github-action-get-latest-release@master
+      uses: loeken/github-action-get-latest-release@master
       with:
         repository: UnchartedBull/OctoDash
 
@@ -47,7 +47,7 @@ jobs:
 
     - name: 🚀 Repository Dispatch
       if: ${{ format('{0}.op{1}.od{2}', steps.octopi_latestrelease.outputs.release, steps.octoprint_latestrelease.outputs.release, steps.octodash_latestrelease.outputs.release) != steps.my_latestrelease.outputs.release }}
-      uses: peter-evans/repository-dispatch@v1
+      uses: peter-evans/repository-dispatch@v2
       with:
         token: ${{ secrets.REPODISPATCH_TOKEN }}
         repository: jneilliii/OctoPi-OctoDash

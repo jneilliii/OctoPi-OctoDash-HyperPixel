@@ -16,27 +16,31 @@ jobs:
 
     - id: my_latestrelease
       name: 🔎 Get My Version
-      uses: loeken/github-action-get-latest-release@master
+      uses: jneilliii/github-action-get-latest-release@master
       with:
         repository: ${{ github.repository }}
+        token: ${{ secrets.REPODISPATCH_TOKEN }}
 
     - id: octoprint_latestrelease
       name: 🔎 Get OctoPrint Version
-      uses: loeken/github-action-get-latest-release@master
+      uses: jneilliii/github-action-get-latest-release@master
       with:
         repository: OctoPrint/OctoPrint
+        token: ${{ secrets.REPODISPATCH_TOKEN }}
 
     - id: octopi_latestrelease
       name: 🔎 Get OctoPi Version
-      uses: loeken/github-action-get-latest-release@master
+      uses: jneilliii/github-action-get-latest-release@master
       with:
         repository: guysoft/OctoPi
+        token: ${{ secrets.REPODISPATCH_TOKEN }}
 
     - id: octodash_latestrelease
       name: 🔎 Get OctoDash Version
-      uses: loeken/github-action-get-latest-release@master
+      uses: jneilliii/github-action-get-latest-release@master
       with:
         repository: UnchartedBull/OctoDash
+        token: ${{ secrets.REPODISPATCH_TOKEN }}
 
     - name: 💁 Print Versions
       run: |

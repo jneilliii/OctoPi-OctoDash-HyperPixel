@@ -26,6 +26,7 @@ jobs:
       uses: jneilliii/github-action-get-latest-release@master
       with:
         repository: OctoPrint/OctoPrint
+        excludes: prerelease, draft
         token: ${{ secrets.REPODISPATCH_TOKEN }}
 
     - id: octopi_latestrelease
@@ -33,6 +34,7 @@ jobs:
       uses: jneilliii/github-action-get-latest-release@master
       with:
         repository: guysoft/OctoPi
+        excludes: prerelease, draft
         token: ${{ secrets.REPODISPATCH_TOKEN }}
 
     - id: octodash_latestrelease
@@ -40,6 +42,7 @@ jobs:
       uses: jneilliii/github-action-get-latest-release@master
       with:
         repository: UnchartedBull/OctoDash
+        excludes: prerelease, draft
         token: ${{ secrets.REPODISPATCH_TOKEN }}
 
     - name: 💁 Print Versions
